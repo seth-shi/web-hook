@@ -168,7 +168,8 @@ func handleHook(name string) error {
 
 func shellExec(command, dir string) (string, error) {
 
-	cmd := exec.Command("/bin/sh", "-c", command)
+	args := strings.Split(command, " ")
+	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Dir = dir
 
 	bytes, err := cmd.Output()
