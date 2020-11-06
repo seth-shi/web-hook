@@ -7,7 +7,8 @@
 * `cp .env.example .env`
 * `按项目配置 hooks.json`
 * `cp _hooks.json hooks.json`
-
+* 构建然后执行可执行文件
+* `go build`
 ****
 
 ## `hooks.json 说明` (钉钉需要在自定义关键词增加`build`关键字,方可发送消息成功)
