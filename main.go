@@ -131,7 +131,7 @@ func handleHook(name string) error {
 	// exec all shell
 	for _, hook := range repository.Hooks {
 
-		output, err := shellExec(hook.Shell)
+		output, err := shellExec(repository, hook)
 		if err != nil {
 			panic(err)
 		}
@@ -157,9 +157,15 @@ func handleHook(name string) error {
 	return nil
 }
 
-func shellExec(command string) (string, error) {
+func shellExec(repository GitHook, hook Hook) (string, error) {
 
-	cmd := exec.Command("/bin/bash", "-c", command)
+	cmd := exec.Command("/bin/sh", "-c", hook.Shell)
+	if len(hook.Dir) > 0 {
+		cmd.Dir = hook.Dir
+	} else {
+		cmd.Dir = repository.Dir
+	}
+
 	bytes, err := cmd.Output()
 	if err != nil {
 		return "", err

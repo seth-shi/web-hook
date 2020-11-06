@@ -32,6 +32,8 @@
     # pull 代码之后触发的构建脚本
     "hooks": [
       {
+        # 执行的环境目录
+        "dir": "/var/www",
         # 可执行的 shell
         "shell": "docker -v",
         # 断言执行 shell 的输出包含内容才才成功
@@ -42,8 +44,10 @@
         "assert_fail_continue": false
       },
       {
-              "shell": "cd /var/www && composer install",
-              "assert": "Generating optimized autoload files",
+              "dir": "/var/www",
+              "shell": "composer install",
+              "assert": "",
+              "assert_no": "Composer could not find a composer.json",
               "assert_fail_continue": false
       }
     ]

@@ -19,6 +19,7 @@ type Notification struct {
 }
 
 type Hook struct {
+	Dir                string `json:"dir"`
 	Shell              string `json:"shell"`
 	Assert             string `json:"assert"`
 	AssertNo           string `json:"assert_no"`

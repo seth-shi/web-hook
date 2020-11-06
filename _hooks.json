@@ -10,13 +10,15 @@
     ],
     "hooks": [
       {
+        "dir": "",
         "shell": "docker -v",
         "assert": "Docker version",
         "assert_no": "",
         "assert_fail_continue": false
       },
       {
-        "shell": "cd /var/www && composer install",
+        "dir": "/var/www",
+        "shell": "composer install",
         "assert": "",
         "assert_no": "Composer could not find a composer.json",
         "assert_fail_continue": false
