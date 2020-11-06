@@ -103,15 +103,17 @@ func handleHook(name string) error {
 
 	defer func() {
 
-		if err := recover(); err != nil {
+		var err error
+		if e := recover(); e != nil {
+			log.Error(e)
 
-			log.Error(err)
-			for _, notification := range repository.Notifications {
-				sendNotification(notification, buildOutput, err)
-			}
+			err, _ = e.(error)
+		}
+
+		for _, notification := range repository.Notifications {
+			sendNotification(notification, buildOutput, err)
 		}
 	}()
-
 
 	output, err := shellExec("git rev-parse --is-inside-work-tree", repository.Dir)
 	if err != nil || output != "true" {
@@ -120,7 +122,7 @@ func handleHook(name string) error {
 
 	// pull code
 	output, err = shellExec("git pull", repository.Dir)
-	if err != nil{
+	if err != nil {
 		panic(fmt.Sprintf("git pull fail: %s", err.Error()))
 	}
 	if strings.Contains(output, "Already") {
@@ -136,7 +138,7 @@ func handleHook(name string) error {
 			dir = hook.Dir
 		}
 
-			output, err := shellExec(hook.Shell, dir)
+		output, err := shellExec(hook.Shell, dir)
 		if err != nil {
 			panic(err)
 		}
@@ -175,7 +177,7 @@ func shellExec(command, dir string) (string, error) {
 	return string(bytes), nil
 }
 
-func sendNotification(n Notification, buildOutput []string, err interface{}) {
+func sendNotification(n Notification, buildOutput []string, err error) {
 
 	if n.Type == "dingtalk" {
 
@@ -185,11 +187,13 @@ func sendNotification(n Notification, buildOutput []string, err interface{}) {
 			body += fmt.Sprintf("- %s\n", o)
 		}
 
-		if errObj, ok := err.(error); ok {
-			body += fmt.Sprintf("### err: %s", errObj.Error())
+		title := "build success"
+		if err != nil {
+			title = "build fail"
+			body += fmt.Sprintf("### err: %s", err.Error())
 		}
 
-		err := robot.SendMarkdown("build notification", body, nil, true)
+		err := robot.SendMarkdown(title, body, nil, true)
 		if err != nil {
 			log.Error(err)
 		}
