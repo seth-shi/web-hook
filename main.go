@@ -145,7 +145,7 @@ func handleHook(name string) error {
 
 		output, err := shellExec(hook.Shell, dir)
 		if err != nil {
-			panic(err)
+			panic(fmt.Sprintf("exec [%s] fail :%s", hook.Shell, err.Error()))
 		}
 
 		buildOutput = append(buildOutput, output)
