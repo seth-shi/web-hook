@@ -12,11 +12,13 @@
       {
         "shell": "docker -v",
         "assert": "Docker version",
+        "assert_no": "",
         "assert_fail_continue": false
       },
       {
         "shell": "cd /var/www && composer install",
-        "assert": "Generating optimized autoload files",
+        "assert": "",
+        "assert_no": "Composer could not find a composer.json",
         "assert_fail_continue": false
       }
     ]

@@ -21,6 +21,7 @@ type Notification struct {
 type Hook struct {
 	Shell              string `json:"shell"`
 	Assert             string `json:"assert"`
+	AssertNo           string `json:"assert_no"`
 	AssertFailContinue bool   `json:"assert_fail_continue"`
 }
 

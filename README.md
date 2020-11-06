@@ -36,6 +36,8 @@
         "shell": "docker -v",
         # 断言执行 shell 的输出包含内容才才成功
         "assert": "Docker version",
+        # 断言执行 shell 的不输出包含内容才才成功
+        "assert_no": "",
         # 断言失败, 是否执行下一个
         "assert_fail_continue": false
       },

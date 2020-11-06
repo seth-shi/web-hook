@@ -95,7 +95,7 @@ func handleHook(name string) error {
 	var buildOutput []string
 
 	repository, exists := gitRepositories[name]
-	if ! exists {
+	if !exists {
 		return errors.New(fmt.Sprintf("repository [%s] does not exist\n", name))
 	}
 
@@ -134,12 +134,20 @@ func handleHook(name string) error {
 		}
 
 		buildOutput = append(buildOutput, output)
-		if ! strings.Contains(output, hook.Assert) {
+		if len(hook.Assert) > 0 && !strings.Contains(output, hook.Assert) {
 			if hook.AssertFailContinue {
 				continue
 			}
 
 			panic(fmt.Sprintf("[output] %s \n[assert] %s\n", output, hook.Assert))
+		}
+
+		if len(hook.AssertNo) > 0 && strings.Contains(output, hook.AssertNo) {
+			if hook.AssertFailContinue {
+				continue
+			}
+
+			panic(fmt.Sprintf("[output] %s \n[assert_no] %s\n", output, hook.Assert))
 		}
 	}
 
@@ -157,7 +165,7 @@ func shellExec(command string) (string, error) {
 	return string(bytes), nil
 }
 
-func sendNotification(n Notification, buildOutput []string, err interface{})  {
+func sendNotification(n Notification, buildOutput []string, err interface{}) {
 
 	if n.Type == "dingtalk" {
 
