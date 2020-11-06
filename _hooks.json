@@ -1,3 +1,24 @@
 [
-
+  {
+    "name": "test",
+    "dir": "./",
+    "notifications": [
+      {
+        "type": "dingtalk",
+        "web_hook": "https://oapi.dingtalk.com/robot/send?access_token="
+      }
+    ],
+    "hooks": [
+      {
+        "shell": "docker -v",
+        "assert": "Docker version",
+        "assert_fail_continue": false
+      },
+      {
+        "shell": "cd /var/www && composer install",
+        "assert": "Generating optimized autoload files",
+        "assert_fail_continue": false
+      }
+    ]
+  }
 ]
