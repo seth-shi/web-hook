@@ -85,7 +85,10 @@ func handleHooks() {
 
 	for name := range hookChan {
 
-		handleHook(name)
+		err := handleHook(name)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 }
 
