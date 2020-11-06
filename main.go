@@ -118,8 +118,11 @@ func handleHook(name string) error {
 	}()
 
 	output, err := shellExec("git rev-parse --is-inside-work-tree", repository.Dir)
-	if err != nil || output != "true" {
-		panic(fmt.Sprintf("%s is not git repository", repository.Dir))
+	if err != nil {
+		panic(fmt.Sprintf("%s is not git repository: %s", repository.Dir, err.Error()))
+	}
+	if output != "true" {
+		panic(fmt.Sprintf("%s is not git repository: check %s", repository.Dir, output))
 	}
 
 	// pull code
