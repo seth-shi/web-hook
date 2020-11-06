@@ -193,10 +193,10 @@ func sendNotification(n Notification, buildOutput []string, err error) {
 		title := "build success"
 		if err != nil {
 			title = "build fail"
-			body += fmt.Sprintf("### err: %s", err.Error())
+			body += fmt.Sprintf("## err: %s", err.Error())
 		}
 
-		body = fmt.Sprintf("### %s\n", title) + body
+		body = fmt.Sprintf("## %s\n", title) + body
 
 		err := robot.SendMarkdown(title, body, nil, true)
 		if err != nil {
