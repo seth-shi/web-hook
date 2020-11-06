@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/go-git/go-git/v5"
 	"github.com/joho/godotenv"
 	"github.com/op/go-logging"
 	"github.com/royeo/dingrobot"
@@ -113,25 +112,31 @@ func handleHook(name string) error {
 		}
 	}()
 
-	g, err := git.PlainOpen(repository.Dir)
-	if err != nil {
-		panic(err)
+
+	output, err := shellExec("git rev-parse --is-inside-work-tree", repository.Dir)
+	if err != nil || output != "true" {
+		panic(fmt.Sprintf("%s is not git repository", repository.Dir))
 	}
 
-	w, err := g.Worktree()
-	if err != nil {
-		panic(err)
+	// pull code
+	output, err = shellExec("git pull", repository.Dir)
+	if err != nil{
+		panic(fmt.Sprintf("git pull fail: %s", err.Error()))
 	}
-
-	err = w.Pull(&git.PullOptions{RemoteName: "origin"})
-	if err != nil {
-		panic(err)
+	if strings.Contains(output, "Already") {
+		log.Info("git Already")
+		return nil
 	}
 
 	// exec all shell
 	for _, hook := range repository.Hooks {
 
-		output, err := shellExec(repository, hook)
+		dir := repository.Dir
+		if len(hook.Dir) > 0 {
+			dir = hook.Dir
+		}
+
+			output, err := shellExec(hook.Shell, dir)
 		if err != nil {
 			panic(err)
 		}
@@ -157,14 +162,10 @@ func handleHook(name string) error {
 	return nil
 }
 
-func shellExec(repository GitHook, hook Hook) (string, error) {
+func shellExec(command, dir string) (string, error) {
 
-	cmd := exec.Command("/bin/sh", "-c", hook.Shell)
-	if len(hook.Dir) > 0 {
-		cmd.Dir = hook.Dir
-	} else {
-		cmd.Dir = repository.Dir
-	}
+	cmd := exec.Command("/bin/sh", "-c", command)
+	cmd.Dir = dir
 
 	bytes, err := cmd.Output()
 	if err != nil {
