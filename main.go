@@ -9,7 +9,6 @@ import (
 	"github.com/royeo/dingrobot"
 	"net/http"
 	"os"
-	"os/exec"
 	"strings"
 )
 
@@ -51,7 +50,7 @@ func main() {
 
 	defer logFile.Close()
 
-	go handleHooks()
+	go task()
 
 	router := gin.Default()
 	router.GET("/ping", ping)
@@ -80,20 +79,21 @@ func webHook(c *gin.Context) {
 	c.String(http.StatusOK, "hook %s success", name)
 }
 
-func handleHooks() {
+func task() {
 
 	for name := range hookChan {
 
-		err := handleHook(name)
+		err := taskJob(name)
 		if err != nil {
 			log.Error(err)
 		}
 	}
 }
 
-func handleHook(name string) error {
+func taskJob(name string) error {
 
 	var err error
+	var lastCommitId string = ""
 	var buildOutput []string
 
 	repository, exists := gitRepositories[name]
@@ -112,75 +112,74 @@ func handleHook(name string) error {
 			}
 		}
 
+		// rollback
+		if len(lastCommitId) != 0 {
+
+			err = gitReset(lastCommitId, repository.Dir)
+			if err != nil {
+				buildOutput = append(buildOutput, err.Error())
+			}
+		}
+
 		for _, notification := range repository.Notifications {
 			sendNotification(notification, buildOutput, err)
 		}
 	}()
 
-	output, err := shellExec("git rev-parse --is-inside-work-tree", repository.Dir)
-	if err != nil {
-		panic(fmt.Sprintf("%s is not git repository: %s", repository.Dir, err.Error()))
-	}
-	if ! strings.Contains(output, "true") {
-		panic(fmt.Sprintf("%s is not git repository: check %s", repository.Dir, output))
+
+	if err = isGitRepository(repository.Dir); err != nil {
+		panic(err.Error())
 	}
 
-	// pull code
-	output, err = shellExec("git pull", repository.Dir)
-	if err != nil {
-		panic(fmt.Sprintf("git pull fail: %s", err.Error()))
+
+	if err = gitPull(repository.Dir); err != nil {
+		panic(err.Error())
 	}
-	if strings.Contains(output, "Already") {
-		panic(fmt.Sprintf("git Already"))
+
+	lastCommitId, err = getLastCommitId(repository.Dir)
+	if err != nil {
+		panic(err.Error())
 	}
 
 	// exec all shell
 	for _, hook := range repository.Hooks {
 
-		dir := repository.Dir
-		if len(hook.Dir) > 0 {
-			dir = hook.Dir
-		}
-
-		output, err := shellExec(hook.Shell, dir)
-		if err != nil {
-			panic(fmt.Sprintf("exec [%s] fail :%s", hook.Shell, err.Error()))
-		}
-
-		buildOutput = append(buildOutput, output)
-		if len(hook.Assert) > 0 && !strings.Contains(output, hook.Assert) {
-			if hook.AssertFailContinue {
-				continue
-			}
-
-			panic(fmt.Sprintf("[output] %s \n[assert] %s\n", output, hook.Assert))
-		}
-
-		if len(hook.AssertNo) > 0 && strings.Contains(output, hook.AssertNo) {
-			if hook.AssertFailContinue {
-				continue
-			}
-
-			panic(fmt.Sprintf("[output] %s \n[assert_no] %s\n", output, hook.Assert))
-		}
+		o := handleShell(repository, hook)
+		buildOutput = append(buildOutput, o)
 	}
 
 	return nil
 }
 
-func shellExec(command, dir string) (string, error) {
+func handleShell(repository GitHook, hook Hook) string {
 
-	args := strings.Split(command, " ")
-	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Dir = dir
-
-	bytes, err := cmd.Output()
-	if err != nil {
-		return "", err
+	dir := repository.Dir
+	if len(hook.Dir) > 0 {
+		dir = hook.Dir
 	}
 
-	return string(bytes), nil
+	output, err := shellExec(hook.Shell, dir)
+	if err != nil {
+		panic(fmt.Sprintf("exec [%s] fail :%s", hook.Shell, err.Error()))
+	}
+
+	if len(hook.Assert) > 0 && !strings.Contains(output, hook.Assert) {
+		if ! hook.AssertFailContinue {
+			panic(fmt.Sprintf("[output] %s \n[assert] %s\n", output, hook.Assert))
+		}
+
+	}
+
+	if len(hook.AssertNo) > 0 && strings.Contains(output, hook.AssertNo) {
+		if ! hook.AssertFailContinue {
+			panic(fmt.Sprintf("[output] %s \n[assert_no] %s\n", output, hook.Assert))
+		}
+	}
+
+	return output
 }
+
+
 
 func sendNotification(n Notification, buildOutput []string, err error) {
 
