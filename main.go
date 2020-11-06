@@ -107,7 +107,9 @@ func handleHook(name string) error {
 		if e := recover(); e != nil {
 			log.Error(e)
 
-			err, _ = e.(error)
+			if str, ok := e.(string); ok {
+				err = errors.New(str)
+			}
 		}
 
 		for _, notification := range repository.Notifications {
@@ -192,6 +194,8 @@ func sendNotification(n Notification, buildOutput []string, err error) {
 			title = "build fail"
 			body += fmt.Sprintf("### err: %s", err.Error())
 		}
+
+		body = fmt.Sprintf("### %s", title) + body
 
 		err := robot.SendMarkdown(title, body, nil, true)
 		if err != nil {
