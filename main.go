@@ -136,12 +136,12 @@ func taskJob(name string) error {
 		panic(err.Error())
 	}
 
-	if err = gitPull(repository.Dir); err != nil {
+	lastCommitId, err = getLastCommitId(repository.Dir)
+	if err != nil {
 		panic(err.Error())
 	}
 
-	lastCommitId, err = getLastCommitId(repository.Dir)
-	if err != nil {
+	if err = gitPull(repository.Dir); err != nil {
 		panic(err.Error())
 	}
 
