@@ -38,7 +38,7 @@ func gitPull(path string) error {
 func getLastCommitId(path string) (string, error) {
 
 	// pull code
-	output, err := shellExec("git log --pretty=format:\"%H\" -n 1 2>&1", path)
+	output, err := shellExec(`git log --pretty=format:"%H" -n 1 2>&1`, path)
 	if err != nil {
 		return "", errors.New(fmt.Sprintf("get commit id: %s", err.Error()))
 	}
@@ -61,8 +61,7 @@ func gitReset(hash, path string) error {
 
 func shellExec(command, dir string) (string, error) {
 
-	args := strings.Split(command, " ")
-	cmd := exec.Command(args[0], args[1:]...)
+	cmd := exec.Command("/bin/sh", "-c", command)
 	cmd.Dir = dir
 
 	bytes, err := cmd.Output()
