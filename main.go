@@ -131,8 +131,7 @@ func handleHook(name string) error {
 		panic(fmt.Sprintf("git pull fail: %s", err.Error()))
 	}
 	if strings.Contains(output, "Already") {
-		log.Info("git Already")
-		return nil
+		panic(fmt.Sprintf("git Already"))
 	}
 
 	// exec all shell
