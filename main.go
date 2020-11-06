@@ -120,9 +120,10 @@ func taskJob(name string) error {
 		// rollback
 		if len(lastCommitId) != 0 {
 
-			err = gitReset(lastCommitId, repository.Dir)
-			if err != nil {
-				buildOutput = append(buildOutput, err.Error())
+			e := gitReset(lastCommitId, repository.Dir)
+			buildOutput = append(buildOutput, "git reset --hard "+lastCommitId)
+			if e != nil {
+				buildOutput = append(buildOutput, e.Error())
 			}
 		}
 
