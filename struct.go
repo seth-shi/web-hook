@@ -11,7 +11,7 @@ type GitHook struct {
 	Dir           string         `json:"dir"`
 	Notifications []Notification `json:"notifications"`
 	Hooks         []Hook         `json:"hooks"`
-	FailHooks	  []FailHook	`json:"fail_hooks"`
+	FailHooks     []FailHook     `json:"fail_hooks"`
 }
 
 type Notification struct {
@@ -20,8 +20,8 @@ type Notification struct {
 }
 
 type FailHook struct {
-	Dir                string `json:"dir"`
-	Shell              string `json:"shell"`
+	Dir   string `json:"dir"`
+	Shell string `json:"shell"`
 }
 
 type Hook struct {

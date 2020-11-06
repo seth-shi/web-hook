@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"strings"
 )
-
 
 func isGitRepository(path string) error {
 
@@ -14,10 +14,10 @@ func isGitRepository(path string) error {
 	if err != nil {
 		return errors.New(fmt.Sprintf("%s is not git repository: %s", path, err.Error()))
 	}
-	if ! strings.Contains(output, "true") {
+	if !strings.Contains(output, "true") {
 		return errors.New(fmt.Sprintf("%s is not git repository: check %s", path, output))
 	}
-	
+
 	return nil
 }
 
@@ -43,21 +43,21 @@ func getLastCommitId(path string) (string, error) {
 		return "", errors.New(fmt.Sprintf("get commit id: %s", err.Error()))
 	}
 
-	hash := strings.TrimSpace(string(output))
-	if len(output) != 40 {
+	reg := regexp.MustCompile(`^[0-9a-f]{40}$`)
+	matches := reg.FindStringSubmatch(string(output))
+	if len(matches) == 0 {
 		return "", errors.New("commit id len not match")
 	}
 
-	return hash, nil
+	return matches[0], nil
 }
 
 func gitReset(hash, path string) error {
 	// pull code ,
-	_, err := shellExec("git reset --hard " + hash, path)
+	_, err := shellExec("git reset --hard "+hash, path)
 
 	return err
 }
-
 
 func shellExec(command, dir string) (string, error) {
 

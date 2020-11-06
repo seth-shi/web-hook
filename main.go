@@ -93,7 +93,7 @@ func task() {
 func taskJob(name string) error {
 
 	var err error
-	var lastCommitId string = ""
+	var lastCommitId string
 	var buildOutput []string
 
 	repository, exists := gitRepositories[name]
@@ -131,11 +131,9 @@ func taskJob(name string) error {
 		}
 	}()
 
-
 	if err = isGitRepository(repository.Dir); err != nil {
 		panic(err.Error())
 	}
-
 
 	if err = gitPull(repository.Dir); err != nil {
 		panic(err.Error())
@@ -169,14 +167,14 @@ func handleShell(repository GitHook, hook Hook) string {
 	}
 
 	if len(hook.Assert) > 0 && !strings.Contains(output, hook.Assert) {
-		if ! hook.AssertFailContinue {
+		if !hook.AssertFailContinue {
 			panic(fmt.Sprintf("[output] %s \n[assert] %s\n", output, hook.Assert))
 		}
 
 	}
 
 	if len(hook.AssertNo) > 0 && strings.Contains(output, hook.AssertNo) {
-		if ! hook.AssertFailContinue {
+		if !hook.AssertFailContinue {
 			panic(fmt.Sprintf("[output] %s \n[assert_no] %s\n", output, hook.Assert))
 		}
 	}
@@ -198,8 +196,6 @@ func handleFailShell(repository GitHook, hook FailHook) string {
 
 	return output
 }
-
-
 
 func sendNotification(n Notification, buildOutput []string, err error) {
 
