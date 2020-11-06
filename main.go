@@ -121,7 +121,7 @@ func handleHook(name string) error {
 	if err != nil {
 		panic(fmt.Sprintf("%s is not git repository: %s", repository.Dir, err.Error()))
 	}
-	if output != "true" {
+	if ! strings.Contains(output, "true") {
 		panic(fmt.Sprintf("%s is not git repository: check %s", repository.Dir, output))
 	}
 
