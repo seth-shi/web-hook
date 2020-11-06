@@ -112,6 +112,11 @@ func taskJob(name string) error {
 			}
 		}
 
+		for _, hook := range repository.FailHooks {
+			o := handleFailShell(repository, hook)
+			buildOutput = append(buildOutput, o)
+		}
+
 		// rollback
 		if len(lastCommitId) != 0 {
 
@@ -174,6 +179,21 @@ func handleShell(repository GitHook, hook Hook) string {
 		if ! hook.AssertFailContinue {
 			panic(fmt.Sprintf("[output] %s \n[assert_no] %s\n", output, hook.Assert))
 		}
+	}
+
+	return output
+}
+
+func handleFailShell(repository GitHook, hook FailHook) string {
+
+	dir := repository.Dir
+	if len(hook.Dir) > 0 {
+		dir = hook.Dir
+	}
+
+	output, err := shellExec(hook.Shell, dir)
+	if err != nil {
+		panic(fmt.Sprintf("exec [%s] fail :%s", hook.Shell, err.Error()))
 	}
 
 	return output

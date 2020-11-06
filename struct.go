@@ -11,11 +11,17 @@ type GitHook struct {
 	Dir           string         `json:"dir"`
 	Notifications []Notification `json:"notifications"`
 	Hooks         []Hook         `json:"hooks"`
+	FailHooks	  []FailHook	`json:"fail_hooks"`
 }
 
 type Notification struct {
 	Type    string `json:"type"`
 	WebHook string `json:"web_hook"`
+}
+
+type FailHook struct {
+	Dir                string `json:"dir"`
+	Shell              string `json:"shell"`
 }
 
 type Hook struct {

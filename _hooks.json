@@ -23,6 +23,12 @@
         "assert_no": "Composer could not find a composer.json",
         "assert_fail_continue": false
       }
+    ],
+    "fail_hooks": [
+      {
+        "dir": "/var/www",
+        "shell": "composer dump-auto"
+      }
     ]
   }
 ]

@@ -50,6 +50,13 @@
               "assert_no": "Composer could not find a composer.json",
               "assert_fail_continue": false
       }
+    ],
+    # 发生错误的时候执行的脚本,用于清理工作
+    "fail_hooks": [
+      {
+        "dir": "/var/www",
+        "shell": "composer dump-auto"
+      }
     ]
   }
 ```
