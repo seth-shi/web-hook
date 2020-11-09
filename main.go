@@ -163,7 +163,7 @@ func taskJob(name string) error {
 		panic(err.Error())
 	}
 
-	lastCommitId, err = getLastCommitId(repository.Dir)
+	tmpCommitId, err := getLastCommitId(repository.Dir)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -171,6 +171,8 @@ func taskJob(name string) error {
 	if err = gitPull(repository.Dir); err != nil {
 		panic(err.Error())
 	}
+
+	lastCommitId = tmpCommitId
 
 	// exec all shell
 	for _, hook := range repository.Hooks {
