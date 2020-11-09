@@ -144,17 +144,14 @@ func taskJob(name string) error {
 
 		for _, hook := range repository.FailHooks {
 			o := handleFailHookShell(repository, hook)
-			buildOutput = append(buildOutput, o)
+			buildOutput = append(buildOutput, hook.Shell, o)
 		}
 
 		// rollback
 		if len(lastCommitId) != 0 {
 
 			e := gitReset(lastCommitId, repository.Dir)
-			buildOutput = append(buildOutput, "git reset --hard "+lastCommitId)
-			if e != nil {
-				buildOutput = append(buildOutput, e.Error())
-			}
+			buildOutput = append(buildOutput, "git reset --hard "+lastCommitId, fmt.Sprintf("%s", e))
 		}
 
 		for _, notification := range repository.Notifications {
@@ -179,7 +176,7 @@ func taskJob(name string) error {
 	for _, hook := range repository.Hooks {
 
 		o := handleHookShell(repository, hook)
-		buildOutput = append(buildOutput, o)
+		buildOutput = append(buildOutput, hook.Shell, o)
 	}
 
 	return nil
@@ -233,9 +230,9 @@ func sendNotification(n Notification, buildOutput []string, err error) {
 	if n.Type == "dingtalk" {
 
 		robot := dingrobot.NewRobot(n.WebHook)
-		body := "- build steps \n"
+		body := "-build steps \n"
 		for _, o := range buildOutput {
-			body += fmt.Sprintf("- %s\n", o)
+			body += fmt.Sprintf("- %s \n", o)
 		}
 
 		title := "build success"
