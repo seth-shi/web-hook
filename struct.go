@@ -6,10 +6,16 @@ import (
 	"io/ioutil"
 )
 
+const (
+	HookFilterParameter = "parameters"
+	HookFilterHeader    = "header"
+)
+
 type GitHook struct {
 	Name          string         `json:"name"`
 	Dir           string         `json:"dir"`
 	Notifications []Notification `json:"notifications"`
+	HookFilters   []HookFilter   `json:"hook_filters"`
 	Hooks         []Hook         `json:"hooks"`
 	FailHooks     []FailHook     `json:"fail_hooks"`
 }
@@ -30,6 +36,12 @@ type Hook struct {
 	Assert             string `json:"assert"`
 	AssertNo           string `json:"assert_no"`
 	AssertFailContinue bool   `json:"assert_fail_continue"`
+}
+
+type HookFilter struct {
+	Type  string `json:"type"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 func parseHooks(file string) (map[string]GitHook, error) {

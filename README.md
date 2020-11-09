@@ -29,6 +29,22 @@
         "web_hook": "https://oapi.dingtalk.com/robot/send?access_token="
       }
     ],
+    # 某些 web hook 不想触发(如 master)
+    # 一下是过滤条件
+    "hook_filters": [
+      {
+        # 参数形式的 key value
+        "type": "parameters",
+        "key": "ref",
+        "value": "refs/heads/dev"
+      },
+      # header 形式的 key value
+      {
+        "type": "header",
+        "key": "X-Gitlab-Event",
+        "value": "Push Hook"
+      }
+    ],
     # pull 代码之后触发的构建脚本
     "hooks": [
       {

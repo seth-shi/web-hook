@@ -8,6 +8,18 @@
         "web_hook": "https://oapi.dingtalk.com/robot/send?access_token="
       }
     ],
+    "hook_filters": [
+      {
+        "type": "parameters",
+        "key": "ref",
+        "value": "refs/heads/dev"
+      },
+      {
+        "type": "header",
+        "key": "X-Gitlab-Event",
+        "value": "Push Hook"
+      }
+    ],
     "hooks": [
       {
         "dir": "",

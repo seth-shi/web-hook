@@ -74,6 +74,36 @@ func webHook(c *gin.Context) {
 
 	name := c.Param("name")
 
+	repository, exists := gitRepositories[name]
+	if !exists {
+		c.String(http.StatusOK, "hook %s doesn't exists", name)
+		return
+	}
+
+	if len(repository.HookFilters) > 0 {
+
+		var requestData map[string]string
+		_ = c.Bind(&requestData)
+
+		for _, filter := range repository.HookFilters {
+
+			switch filter.Type {
+
+			case HookFilterHeader:
+				if filter.Value != c.GetHeader(filter.Key) {
+					c.String(http.StatusBadRequest, "header %s want %s, give %s", filter.Key, filter.Value, c.GetHeader(filter.Key))
+					return
+				}
+			case HookFilterParameter:
+				// support query, post,
+				if filter.Value != requestData[filter.Key] {
+					c.String(http.StatusBadRequest, "header %s want %s, give %s", filter.Key, filter.Value, requestData[filter.Key])
+					return
+				}
+			}
+		}
+	}
+
 	hookChan <- name
 
 	c.String(http.StatusOK, "hook %s success", name)
@@ -113,7 +143,7 @@ func taskJob(name string) error {
 		}
 
 		for _, hook := range repository.FailHooks {
-			o := handleFailShell(repository, hook)
+			o := handleFailHookShell(repository, hook)
 			buildOutput = append(buildOutput, o)
 		}
 
@@ -148,14 +178,14 @@ func taskJob(name string) error {
 	// exec all shell
 	for _, hook := range repository.Hooks {
 
-		o := handleShell(repository, hook)
+		o := handleHookShell(repository, hook)
 		buildOutput = append(buildOutput, o)
 	}
 
 	return nil
 }
 
-func handleShell(repository GitHook, hook Hook) string {
+func handleHookShell(repository GitHook, hook Hook) string {
 
 	dir := repository.Dir
 	if len(hook.Dir) > 0 {
@@ -183,7 +213,7 @@ func handleShell(repository GitHook, hook Hook) string {
 	return output
 }
 
-func handleFailShell(repository GitHook, hook FailHook) string {
+func handleFailHookShell(repository GitHook, hook FailHook) string {
 
 	dir := repository.Dir
 	if len(hook.Dir) > 0 {
