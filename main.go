@@ -140,18 +140,18 @@ func taskJob(name string) error {
 			if str, ok := e.(string); ok {
 				err = errors.New(str)
 			}
+
+			// rollback
+			if len(lastCommitId) != 0 {
+
+				re := gitReset(lastCommitId, repository.Dir)
+				buildOutput = append(buildOutput, "git reset --hard "+lastCommitId, fmt.Sprintf("%s", re))
+			}
 		}
 
 		for _, hook := range repository.FailHooks {
 			o := handleFailHookShell(repository, hook)
 			buildOutput = append(buildOutput, hook.Shell, o)
-		}
-
-		// rollback
-		if len(lastCommitId) != 0 {
-
-			e := gitReset(lastCommitId, repository.Dir)
-			buildOutput = append(buildOutput, "git reset --hard "+lastCommitId, fmt.Sprintf("%s", e))
 		}
 
 		for _, notification := range repository.Notifications {
