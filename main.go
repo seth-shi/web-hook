@@ -193,7 +193,7 @@ func handleHookShell(repository GitHook, hook Hook) string {
 
 	output, err := shellExec(hook.Shell, dir)
 	if err != nil {
-		panic(fmt.Sprintf("exec [%s] fail :%s", hook.Shell, err.Error()))
+		panic(fmt.Sprintf("exec [%s] fail :%s \n %s", hook.Shell, err.Error(), output))
 	}
 
 	if len(hook.Assert) > 0 && !strings.Contains(output, hook.Assert) {
