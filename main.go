@@ -145,7 +145,11 @@ func taskJob(name string) error {
 			if len(lastCommitId) != 0 {
 
 				re := gitReset(lastCommitId, repository.Dir)
-				buildOutput = append(buildOutput, "git reset --hard "+lastCommitId, fmt.Sprintf("%s", re))
+				rollbackErr := ""
+				if re != nil {
+					rollbackErr = re.Error()
+				}
+				buildOutput = append(buildOutput, "git reset --hard "+lastCommitId, rollbackErr)
 			}
 		}
 
@@ -240,7 +244,7 @@ func sendNotification(n Notification, buildOutput []string, err error) {
 		title := "build success"
 		if err != nil {
 			title = "build fail"
-			body += fmt.Sprintf("## err: %s", err.Error())
+			body += fmt.Sprintf("- err: %s", err.Error())
 		}
 
 		body = fmt.Sprintf("## %s\n", title) + body
