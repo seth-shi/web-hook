@@ -74,9 +74,6 @@ func shellExec(command, dir string) (string, error) {
 	cmd.Dir = dir
 
 	bytes, err := cmd.Output()
-	if err != nil {
-		return "", err
-	}
 
-	return string(bytes), nil
+	return string(bytes), err
 }
