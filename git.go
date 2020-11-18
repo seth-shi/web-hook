@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -44,7 +45,7 @@ func getLastCommitId(path string) (string, error) {
 	}
 
 	reg := regexp.MustCompile(`^[0-9a-f]{40}$`)
-	matches := reg.FindStringSubmatch(string(output))
+	matches := reg.FindStringSubmatch(strings.Trim(string(output), "\""))
 	if len(matches) == 0 {
 		return "", errors.New("commit id len not match")
 	}
@@ -61,7 +62,15 @@ func gitReset(hash, path string) error {
 
 func shellExec(command, dir string) (string, error) {
 
-	cmd := exec.Command("/bin/sh", "-c", command)
+	var shell, flag string
+	if runtime.GOOS == "windows" {
+		shell = "cmd"
+		flag = "/C"
+	} else {
+		shell = "/bin/sh"
+		flag = "-c"
+	}
+	cmd := exec.Command(shell,flag,command)
 	cmd.Dir = dir
 
 	bytes, err := cmd.Output()
