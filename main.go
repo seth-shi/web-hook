@@ -249,6 +249,10 @@ func sendNotification(n Notification, buildOutput []string, err error) {
 
 		body = fmt.Sprintf("## %s\n", title) + body
 
+		if len(body) > 10000 {
+			body = body[:10000]
+		}
+
 		err := robot.SendMarkdown(title, body, nil, true)
 		if err != nil {
 			log.Error(err)
